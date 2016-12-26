@@ -1,23 +1,23 @@
 "use strict"
 
-var MostCreate= require( "@most/create")
+var MostCreate= require( "@most/create").create
 
-function MostClockMultipler( periodicStream, n) {
+function MostClockMultiplier( periodicStream, n) {
 	return MostCreate(function( add, complete, error){
 		var
-		  last,
-		  ticks
+		  last= Date.now(),
+		  ticks= new Array( n- 1)
 		function setTimers( ms){
 			var
 			  step= ms/ n,
 			  wait= step
-			for( var i= 0; i< n; ++i){
+			for( var i= 0; i< n- 1; ++i){
 				ticks[ i]= setTimeout( add, wait)
 				wait+= step
 			}
 		}
 		function clearTimers(){
-			for(var i= 0; i< ticks.length; ++i){
+			for(var i= 0; i< n- 1; ++i){
 				clearTimeout( ticks[ i])
 			}
 		}
@@ -33,15 +33,17 @@ function MostClockMultipler( periodicStream, n) {
 			add( value)
 		}
 		function dispose(){
-			subscription()
 			clearTimers()
+			subscription.unsubscribe()
 		}
-		var subscription= stream.subscribe({
+		var subscription= periodicStream.subscribe({
 			next,
 			complete,
 			error
 		})
-		return dispose
 		
 	})
 }
+
+module.exports= MostClockMultiplier
+module.exports.MostClockMultiplier= MostClockMultiplier
